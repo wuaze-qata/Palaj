@@ -69,7 +69,7 @@ export default function FormPage() {
           alert("kkأعد المحاولة حدث خطأ ما");
         }
       } catch (error) {
-        alert("jjأعد المحاولة حدث خطأ ما");
+        alert(error);
       }
     } else {
       setError(true);
