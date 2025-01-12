@@ -1,8 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function ResultPage() {
+  const searchParams = useSearchParams();
+  const idNumber = searchParams.get("idNumber");
+
   const [mobileNumber, setMobileNumber] = useState("");
   const [firstOperationType, setFirstOperationType] = useState("reprint"); // تعيين القيمة الافتراضية "لا"
   const [secondOperationType, setSecondOperationType] = useState("reprint"); // تعيين القيمة الافتراضية "لا"
@@ -47,7 +51,7 @@ export default function ResultPage() {
         );
 
         if (response.ok) {
-          router.push("/summary");
+          router.push(`/summary?idNumber=${idNumber}`);
         } else {
           alert("أعد المحاولة حدث خطأ ما");
         }
@@ -74,11 +78,15 @@ export default function ResultPage() {
         تعبئة نموذج الطلب -- سوف يستغرق حوالي 1 دقيقة لإتمام الطلب.
       </p>
 
-      <div className="mb-4">
+  <div className="mb-4">
         <p className="text-2xl py-8 font-bold">معلومات حامل البطاقة</p>
+        <div className="flex flex-col gap-2 mb-4">
+          <p className="text-gray-500 text-md">الرقم الشخصي</p>
+          <p className="text-xl">{idNumber}</p>
+        </div>
       </div>
-
-      <div className="mb-4">
+      <hr />
+      <div className="mb-4 mt-4">
         <label className="block text-md font-medium mb-2">رقم الهاتف</label>
         <input
           type="text"
