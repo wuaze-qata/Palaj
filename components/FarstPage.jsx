@@ -66,10 +66,10 @@ export default function FormPage() {
         if (response.ok) {
           router.push(`/apply?idNumber=${idNumber}`);
         } else {
-          alert("أعد المحاولة حدث خطأ ما");
+          alert("kkأعد المحاولة حدث خطأ ما");
         }
       } catch (error) {
-        alert("أعد المحاولة حدث خطأ ما");
+        alert("jjأعد المحاولة حدث خطأ ما");
       }
     } else {
       setError(true);
