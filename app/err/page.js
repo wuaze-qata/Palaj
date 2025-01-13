@@ -17,12 +17,12 @@ export default function Err() {
         <div className="mb-8 flex flex-col items-center justify-center">
         <div className="relative w-[30%] h-[60px] mb-4">      
           <Image 
-           src="/public/retirer.png"
+           src="/retirer.png"
            fill>
           </Image>
         </div>          
           <p className="text-md text-gray-700">
-          حدث خطأ في تنفيذ العملية أعد المحاولة
+          حدث خطأ في تنفيذ عملية الدفع الرجاء المحاولة مجددا او تجربة طريقة اخرى
           </p>
         </div>
                   <button
