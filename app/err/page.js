@@ -17,7 +17,7 @@ export default function Err() {
         <div className="mb-8 flex flex-col items-center justify-center">
         <div className="relative w-[30%] h-[60px] mb-4">      
           <Image 
-           src={"/retirer.png"}
+           src="/retirer.png"
            fill>
           </Image>
         </div>          
